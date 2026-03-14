@@ -12,7 +12,7 @@
  *      - Agar mealType unknown hai, return null
  *      - Agar name missing/empty, return null
  *      - Return: { name, mealType, days, dailyRate, totalCost }
- *
+ *  
  *   2. combinePlans(...plans)
  *      - Rest parameter! Takes any number of plan objects
  *      - Each plan: { name, mealType, days, dailyRate, totalCost }
@@ -40,13 +40,37 @@
  *   // => { totalCustomers: 3, totalRevenue: 7200, mealBreakdown: { veg: 2, nonveg: 1 } }
  */
 export function createTiffinPlan({ name, mealType = "veg", days = 30 } = {}) {
-  // Your code here
+  let mealPrice = {veg:80, nonveg:120, jain:90}
+  if(!name || name.trim().length === 0 || !Object.keys(mealPrice).includes(mealType)){
+    return null;
+  }
+  let dailyRate = mealPrice[mealType];
+  let totalCost = dailyRate*days;
+  return { name, mealType, days, dailyRate, totalCost }
 }
 
 export function combinePlans(...plans) {
-  // Your code here
+  if( plans.length === 0){
+    return null;
+  }
+  return  plans.reduce((obj, plan) => {
+    obj.totalCustomers += 1;
+    obj.totalRevenue += plan.totalCost;
+    obj.mealBreakdown[plan.mealType] += 1;
+    return obj
+  }, {totalCustomers: 0,totalRevenue: 0,mealBreakdown: {veg: 0, nonveg: 0}})
+
 }
 
 export function applyAddons(plan, ...addons) {
-  // Your code here
+  if(!plan){
+    return null;
+  }
+  let newPlan = {...plan};
+  let addonNames = addons.map((a) => a.name)
+  newPlan.dailyRate = newPlan.dailyRate + addons.reduce((sum, a) => sum + a.price, 0);
+  newPlan.totalCost = newPlan.dailyRate * newPlan.days;
+  newPlan.addonNames = addonNames;
+  return newPlan;
+
 }

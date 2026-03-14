@@ -44,18 +44,44 @@
  *   [{ rating: 3 }, { rating: 5 }].sort(byRating)
  *   // => [{ rating: 5 }, { rating: 3 }]
  */
-export function createFilter(field, operator, value) {
-  // Your code here
-}
+export const createFilter = (field, operator, value) => {
+  return (item) => {
+    const itemValue = item[field];
+    switch(operator){
+      case '>=': return itemValue >= value;
+      case '>': return itemValue > value;
+      case '<=': return itemValue <= value;
+      case '<': return itemValue < value;
+      case '===': return itemValue === value;
+      default: return false;
+    }
+  };
+};
 
-export function createSorter(field, order = "asc") {
-  // Your code here
-}
+export const createSorter = (field, order = 'asc') => {
+  return (a, b) => {
+    const aVal = a[field];
+    const bVal = b[field];
+    if(typeof aVal === 'string'){
+      const comparison = aVal.localeCompare(bVal);
+      return order === 'desc' ? -comparison : comparison;
+    }
+    const comparison = aVal - bVal;
+    return order === 'desc' ? -comparison : comparison;
+  };
+};
 
-export function createMapper(fields) {
-  // Your code here
-}
+export const createMapper = (fields) => {
+  return (item) => {
+    const mapped = {};
+    fields.forEach((field) => {
+      mapped[field] = item[field];
+    });
+    return mapped;
+  };
+};
 
-export function applyOperations(data, ...operations) {
-  // Your code here
-}
+export const applyOperations = (data, ...operations) => {
+  if(!Array.isArray(data)) return [];
+  return operations.reduce((result, operation) => operation(result), data);
+};

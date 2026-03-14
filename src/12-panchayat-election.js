@@ -63,18 +63,62 @@
  *   election.castVote("V1", "C1", r => "voted!", e => "error: " + e);
  *   // => "voted!"
  */
-export function createElection(candidates) {
-  // Your code here
-}
+export const createVoteValidator = (rules) => {
+  const { minAge = 18, requiredFields = [] } = rules;
+  return (voter) => {
+    for(const field of requiredFields){
+      if(voter[field] === undefined) return { valid: false, reason: `Missing field: ${field}` };
+    }
+    if(voter.age < minAge) return { valid: false, reason: `Age must be at least ${minAge}` };
+    return { valid: true };
+  };
+};
 
-export function createVoteValidator(rules) {
-  // Your code here
-}
+export const countVotesInRegions = (region) => {
+  if(!region) return 0;
+  const count = region.votes || 0;
+  const subCount = (region.subRegions || []).reduce((sum, sub) => sum + countVotesInRegions(sub), 0);
+  return count + subCount;
+};
 
-export function countVotesInRegions(regionTree) {
-  // Your code here
-}
+export const tallyPure = (tally, candidateId) => {
+  return { ...tally, [candidateId]: (tally[candidateId] || 0) + 1 };
+};
 
-export function tallyPure(currentTally, candidateId) {
-  // Your code here
-}
+export const createElection = (candidates) => {
+  const voters = new Map();
+  const votes = new Map();
+  const voterVoted = new Set();
+  
+  candidates.forEach((c) => {
+    votes.set(c.id, 0);
+  });
+  
+  return {
+    registerVoter(voter) {
+      if(!voter || !voter.id || !voter.name || voter.age === undefined) return false;
+      if(voter.age < 18) return false;
+      if(voters.has(voter.id)) return false;
+      voters.set(voter.id, voter);
+      return true;
+    },
+    castVote(voterId, candidateId, onSuccess, onDecline) {
+      if(!voters.has(voterId)) return onDecline('Voter not registered');
+      if(!votes.has(candidateId)) return onDecline('Candidate not found');
+      if(voterVoted.has(voterId)) return onDecline('Already voted');
+      voterVoted.add(voterId);
+      votes.set(candidateId, votes.get(candidateId) + 1);
+      return onSuccess({ voterId, candidateId });
+    },
+    getResults(sortFn) {
+      const results = candidates.map((c) => ({ ...c, votes: votes.get(c.id) }));
+      if(typeof sortFn === 'function') return results.sort(sortFn);
+      return results.sort((a, b) => b.votes - a.votes);
+    },
+    getWinner() {
+      const results = this.getResults();
+      if(results.length === 0 || results[0].votes === 0) return null;
+      return results[0];
+    },
+  };
+};

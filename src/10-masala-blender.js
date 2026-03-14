@@ -52,30 +52,27 @@
  *   recipe({ name: "Haldi" })
  *   // => { name: "Haldi", form: "powder", packed: true, label: "Haldi Masala" }
  */
-export function pipe(...fns) {
-  // Your code here
-}
+export const grind = (spice) => ({ ...spice, form: 'powder' });
 
-export function compose(...fns) {
-  // Your code here
-}
+export const roast = (spice) => ({ ...spice, roasted: true, aroma: 'strong' });
 
-export function grind(spice) {
-  // Your code here
-}
+export const mix = (spice) => ({ ...spice, mixed: true });
 
-export function roast(spice) {
-  // Your code here
-}
+export const pack = (spice) => ({ ...spice, packed: true, label: `${spice.name} Masala` });
 
-export function mix(spice) {
-  // Your code here
-}
+export const pipe = (...fns) => (value) => {
+  return fns.reduce((acc, fn) => fn(acc), value);
+};
 
-export function pack(spice) {
-  // Your code here
-}
+export const compose = (...fns) => (value) => {
+  return fns.reduceRight((acc, fn) => fn(acc), value);
+};
 
-export function createRecipe(steps) {
-  // Your code here
-}
+export const createRecipe = (steps) => {
+  if(!Array.isArray(steps)) return (x) => x;
+  const stepFunctions = { grind, roast, mix, pack };
+  const functions = steps
+    .map((name) => stepFunctions[name])
+    .filter((fn) => fn !== undefined);
+  return pipe(...functions);
+};

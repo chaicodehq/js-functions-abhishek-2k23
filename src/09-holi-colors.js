@@ -53,22 +53,46 @@
  *   // => { name: "red-blue", r: 128, g: 0, b: 128 }
  *   // red and blue objects are UNCHANGED
  */
-export function mixColors(color1, color2) {
-  // Your code here
-}
+export const mixColors = (color1, color2) => {
+  if(!color1 || !color2) return null;
+  const r = Math.round((color1.r + color2.r) / 2);
+  const g = Math.round((color1.g + color2.g) / 2);
+  const b = Math.round((color1.b + color2.b) / 2);
+  return { name: `${color1.name}-${color2.name}`, r, g, b };
+};
 
-export function adjustBrightness(color, factor) {
-  // Your code here
-}
+export const adjustBrightness = (color, factor) => {
+  if(!color || typeof factor !== 'number') return null;
+  const clamp = (val) => Math.min(255, Math.max(0, val));
+  return {
+    name: color.name,
+    r: clamp(Math.round(color.r * factor)),
+    g: clamp(Math.round(color.g * factor)),
+    b: clamp(Math.round(color.b * factor)),
+  };
+};
 
-export function addToPalette(palette, color) {
-  // Your code here
-}
+export const addToPalette = (palette, color) => {
+  if(!color) return Array.isArray(palette) ? [...palette] : [];
+  if(!Array.isArray(palette)) return [color];
+  return [...palette, color];
+};
 
-export function removeFromPalette(palette, colorName) {
-  // Your code here
-}
+export const removeFromPalette = (palette, colorName) => {
+  if(!Array.isArray(palette)) return [];
+  return palette.filter((c) => c.name !== colorName);
+};
 
-export function mergePalettes(palette1, palette2) {
-  // Your code here
-}
+export const mergePalettes = (palette1, palette2) => {
+  const arr1 = Array.isArray(palette1) ? palette1 : [];
+  const arr2 = Array.isArray(palette2) ? palette2 : [];
+  const merged = [...arr1];
+  const names = new Set(arr1.map((c) => c.name));
+  arr2.forEach((color) => {
+    if(!names.has(color.name)){
+      merged.push(color);
+      names.add(color.name);
+    }
+  });
+  return merged;
+};
